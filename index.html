@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>   
+  <div class="topbar">
+    <h4>Chengannur Chits</h4>
+    <span><img src="images/user.png" alt="usericon">
+      <p id="branchNamehid">User Name</p>
+      <input type="hidden" id="hidbranchName"></span>
+  </div>
+
+  <nav>
+  <ul>
+    <li class="dropdown"><a class="active" href="home.html"><img src="images/home.png" alt="">Dashboard</a></li>
+
+    <li class="dropdown">
+      <a ><img src="images/cust.png" alt="">Customer ▾</a>
+      <ul class="dropdown-content">
+        <li><a href="/customer/new.html">New Customer</a></li>
+        <li><a href="chit_payment.html">Customer List</a></li>
+      </ul>
+    </li>        
+   
+    <li class="dropdown">
+      <a><img src="images/chits.png" alt="">Chits ▾</a>
+      <ul class="dropdown-content">
+        <li><a href="chit_summary.html">Chit Summary</a></li>
+        <li><a href="chit_payment.html">Chit Payments</a></li>
+        <li><a href="chit_members.html">Chit Members</a></li>
+      </ul>
+    </li>  
+
+    <li class="dropdown">
+      <a><img src="images/account.png" alt="">Accounts ▾</a>
+      <ul class="dropdown-content">
+        <li><a href="chit_summary.html">Balance</a></li>
+        <li><a href="chit_payment.html">Cash Tranfer</a></li>
+      </ul>
+    </li>  
+
+    <li class="dropdown">
+      <a><img src="images/reports.png" alt="">Reports ▾</a>
+      <ul class="dropdown-content">
+        <li><a href="chit_summary.html">Balance</a></li>
+        <li><a href="chit_payment.html">Cash Tranfer</a></li>
+      </ul>
+    </li>  
+    
+    
+    <li class="dropdown" id="settingsLink"><a href="setings.html"><img src="images/setting.png" alt="">Settings</a></li>  
+     <li class="dropdown"><a href="balance.html"><img src="images/logout.png" alt="">LogOut</a></li>      
+  </ul>
+</nav>
+
+
+<div class="main_container"> 
+  <h1>Backs\ash</h1>
+</div>
+  
+</body>
+</html>
