@@ -215,13 +215,14 @@ if (!currentUser) window.location.href = "./";
 
 userName.textContent = currentUser.user;
 
-// --- load branch
+// --- Load branch ---
 const branchRef = doc(db, "branches", currentUser.branchId);
 const branchDoc = await getDoc(branchRef);
+let branchData = null;
 if (branchDoc.exists()) {
-  const b = branchDoc.data();
-  branchSelect.textContent = b.name;
-  branchSelect1.textContent = b.name;
+  branchData = branchDoc.data();
+  branchSelect.textContent = branchData.name;
+  branchSelect1.textContent = branchData.name;
 }
 
 // --- Load today's attendance record ---
@@ -237,16 +238,13 @@ if (!snap.empty) {
   const docData = snap.docs[0].data();
   if (docData.time) {
     const d = docData.time.toDate();
-    const dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-    const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-    document.getElementById("inTime").textContent = `${dateStr} : ${timeStr}`;
+    document.getElementById("inTime").textContent =
+      `${d.toLocaleDateString('en-IN')} : ${d.toLocaleTimeString('en-IN')}`;
   }
-
   if (docData.checkoutTime) {
     const out = docData.checkoutTime.toDate();
-    const dateStr = out.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-    const timeStr = out.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-    document.getElementById("outTime").textContent = `${dateStr} : ${timeStr}`;
+    document.getElementById("outTime").textContent =
+      `${out.toLocaleDateString('en-IN')} : ${out.toLocaleTimeString('en-IN')}`;
   }
 }
 
@@ -261,25 +259,19 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- CHECK-IN BUTTON ---
+// --- CHECK-IN ---
 markBtn.onclick = async () => {
   statusBox.textContent = "";
   loader.style.display = "flex";
 
-  const bDoc = await getDoc(branchRef);
-  if (!bDoc.exists()) {
-    loader.style.display = "none";
-    return alert("Branch not found");
-  }
-
-  const b = bDoc.data();
+  if (!branchData) return alert("Branch not found");
 
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const { latitude, longitude } = pos.coords;
-    const distance = getDistance(latitude, longitude, b.lat, b.lng);
-    const radius = Number(b.radius_m);
+    const distance = getDistance(latitude, longitude, branchData.lat, branchData.lng);
+    const radius = Number(branchData.radius_m);
 
-    if (isNaN(b.lat) || isNaN(b.lng) || isNaN(radius)) {
+    if (isNaN(branchData.lat) || isNaN(branchData.lng) || isNaN(radius)) {
       loader.style.display = "none";
       return alert("⚠️ Invalid branch location data");
     }
@@ -306,7 +298,7 @@ markBtn.onclick = async () => {
     await addDoc(collection(db, "attendance"), {
       userId: currentUser.id,
       username: currentUser.username,
-      branchName: b.name,
+      branchName: branchData.name,
       branchId: currentUser.branchId,
       time: serverTimestamp(),
       dateStr: todayStr,
@@ -322,36 +314,99 @@ markBtn.onclick = async () => {
   });
 };
 
-// --- CHECK-OUT BUTTON ---
+// --- CHECK-OUT ---
 const checkoutBtn = document.getElementById("checkout");
 checkoutBtn.addEventListener("click", async () => {
   const confirmOut = confirm("Do you really want to Check Out?");
   if (!confirmOut) return;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  loader.style.display = "flex";
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const { latitude, longitude } = pos.coords;
+    const distance = getDistance(latitude, longitude, branchData.lat, branchData.lng);
+    const radius = Number(branchData.radius_m);
+
+    if (distance > radius && currentUser.role !== "admin") {
+      loader.style.display = "none";
+      alert(`⚠️ You are outside branch area (${Math.round(distance)}m > ${radius}m)`);
+      return;
+    }
+
+    const q = query(
+      collection(db, "attendance"),
+      where("userId", "==", currentUser.id),
+      where("dateStr", "==", todayStr)
+    );
+
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      loader.style.display = "none";
+      return alert("⚠️ You haven't checked in yet!");
+    }
+
+    const attDoc = snap.docs[0];
+    const attRef = attDoc.ref;
+
+    if (attDoc.data().checkoutTime) {
+      loader.style.display = "none";
+      return alert("✅ You already checked out!");
+    }
+
+    await updateDoc(attRef, {
+      checkoutTime: serverTimestamp(),
+      checkoutLocation: { lat: latitude, lng: longitude, distance }
+    });
+
+    const now = new Date();
+    document.getElementById("outTime").textContent =
+      `${now.toLocaleDateString('en-IN')} : ${now.toLocaleTimeString('en-IN')}`;
+    loader.style.display = "none";
+    alert("✅ Checked out successfully!");
+  }, () => {
+    loader.style.display = "none";
+    alert("⚠️ Location access denied.");
+  });
+});
+
+// --- BREAK OUT / IN ---
+const brkOut = document.getElementById("brkout");
+const brkIn = document.getElementById("brkin");
+
+brkOut.addEventListener("click", async () => {
+  const confirmOut = confirm("Start break now?");
+  if (!confirmOut) return;
   const q = query(
     collection(db, "attendance"),
     where("userId", "==", currentUser.id),
     where("dateStr", "==", todayStr)
   );
-
   const snap = await getDocs(q);
   if (snap.empty) return alert("⚠️ You haven't checked in yet!");
 
   const attDoc = snap.docs[0];
   const attRef = attDoc.ref;
 
-  if (attDoc.data().checkoutTime) return alert("✅ You already checked out!");
+  await updateDoc(attRef, { breakOut: serverTimestamp() });
+  alert("🍵 Break started!");
+});
 
-  await updateDoc(attRef, { checkoutTime: serverTimestamp() });
+brkIn.addEventListener("click", async () => {
+  const confirmIn = confirm("End break now?");
+  if (!confirmIn) return;
+  const q = query(
+    collection(db, "attendance"),
+    where("userId", "==", currentUser.id),
+    where("dateStr", "==", todayStr)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return alert("⚠️ You haven't checked in yet!");
 
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  document.getElementById("outTime").textContent = `${dateStr} : ${timeStr}`;
+  const attDoc = snap.docs[0];
+  const attRef = attDoc.ref;
 
-  loader.style.display = "none";
-  alert("✅ Checked out successfully!");
+  await updateDoc(attRef, { breakIn: serverTimestamp() });
+  alert("✅ Break ended!");
 });
 
 // --- sign out
