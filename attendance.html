@@ -248,9 +248,6 @@ if (!snap.empty) {
   }
 }
 
-
-
-
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -319,6 +316,55 @@ markBtn.onclick = async () => {
     alert("⚠️ Location access denied.");
   });
 };
+
+// --- CHECK OUT BUTTON ---
+const checkoutBtn = document.getElementById("checkout");
+
+checkoutBtn.addEventListener("click", async () => {
+  const confirmOut = confirm("Do you really want to Check Out?");
+  if (!confirmOut) return;
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const q = query(
+    collection(db, "attendance"),
+    where("userId", "==", currentUser.id),
+    where("dateStr", "==", todayStr)
+  );
+
+  const snap = await getDocs(q);
+  if (snap.empty) {
+    alert("⚠️ You haven't checked in yet!");
+    return;
+  }
+
+  // Only one attendance doc per day, so take the first one
+  const attDoc = snap.docs[0];
+  const attRef = attDoc.ref;
+
+  // If already checked out, prevent duplicate
+  if (attDoc.data().checkoutTime) {
+    alert("✅ You already checked out!");
+    return;
+  }
+
+  // Update Firestore with checkout time
+  await updateDoc(attRef, {
+    checkoutTime: serverTimestamp()
+  });
+
+  // Show current date/time in UI
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+  const timeStr = now.toLocaleTimeString('en-IN', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+  });
+
+  document.getElementById("outTime").textContent = `${dateStr} : ${timeStr}`;
+  alert("✅ Checked out successfully!");
+});
+
 
 // --- sign out
 document.getElementById("signOutBtn").addEventListener("click", () => {
