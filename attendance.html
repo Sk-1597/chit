@@ -220,6 +220,7 @@ if (branchDoc.exists()) {
   branchSelect.textContent = b.name;
   branchSelect1.textContent = b.name;
 }
+
 // --- Load today's attendance record ---
 const todayStr = new Date().toISOString().slice(0,10);
 const q = query(
@@ -231,23 +232,22 @@ const snap = await getDocs(q);
 
 if (!snap.empty) {
   const docData = snap.docs[0].data();
-
   if (docData.time) {
-    const d = docData.time.toDate();  // Firestore Timestamp → JS Date
-
-    // Format date and time for display
-    const dateStr = d.toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-    const timeStr = d.toLocaleTimeString('en-IN', {
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-    });
-
-    // Display in your HTML
+    const d = docData.time.toDate();
+    const dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     document.getElementById("inTime").textContent = `${dateStr} : ${timeStr}`;
+  }
+
+  if (docData.checkoutTime) {
+    const out = docData.checkoutTime.toDate();
+    const dateStr = out.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = out.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    document.getElementById("outTime").textContent = `${dateStr} : ${timeStr}`;
   }
 }
 
+// --- Distance calculator ---
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -258,6 +258,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// --- CHECK-IN BUTTON ---
 markBtn.onclick = async () => {
   statusBox.textContent = "";
   loader.style.display = "flex";
@@ -267,6 +268,7 @@ markBtn.onclick = async () => {
     loader.style.display = "none";
     return alert("Branch not found");
   }
+
   const b = bDoc.data();
 
   navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -315,10 +317,10 @@ markBtn.onclick = async () => {
     loader.style.display = "none";
     alert("⚠️ Location access denied.");
   });
+};
 
-  // --- CHECK OUT BUTTON ---
+// --- CHECK-OUT BUTTON ---
 const checkoutBtn = document.getElementById("checkout");
-
 checkoutBtn.addEventListener("click", async () => {
   const confirmOut = confirm("Do you really want to Check Out?");
   if (!confirmOut) return;
@@ -331,39 +333,24 @@ checkoutBtn.addEventListener("click", async () => {
   );
 
   const snap = await getDocs(q);
-  if (snap.empty) {
-    alert("⚠️ You haven't checked in yet!");
-    return;
-  }
+  if (snap.empty) return alert("⚠️ You haven't checked in yet!");
 
-  // Only one attendance doc per day, so take the first one
   const attDoc = snap.docs[0];
   const attRef = attDoc.ref;
 
-  // If already checked out, prevent duplicate
-  if (attDoc.data().checkoutTime) {
-    alert("✅ You already checked out!");
-    return;
-  }
+  if (attDoc.data().checkoutTime) return alert("✅ You already checked out!");
 
-  // Update Firestore with checkout time
-  await updateDoc(attRef, {
-    checkoutTime: serverTimestamp()
-  });
+  await updateDoc(attRef, { checkoutTime: serverTimestamp() });
 
-  // Show current date/time in UI
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric'
-  });
-  const timeStr = now.toLocaleTimeString('en-IN', {
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-  });
-
+  const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
   document.getElementById("outTime").textContent = `${dateStr} : ${timeStr}`;
+
+  loader.style.display = "none";
   alert("✅ Checked out successfully!");
 });
-};
+
 
 
 
