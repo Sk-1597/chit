@@ -220,6 +220,15 @@ if (branchDoc.exists()) {
   branchSelect.textContent = b.name;
   branchSelect1.textContent = b.name;
 }
+//--- Load attendance data
+const timeRef = doc(db, "attendance", currentUser.branchId);
+const timeDoc = await getDoc(timeRef);
+if (timeDoc.exists()) {
+  const b = timeDoc.data();
+  branchSelect.textContent = b.name;
+  branchSelect1.textContent = b.name;
+}
+
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
