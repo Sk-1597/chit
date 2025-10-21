@@ -220,13 +220,25 @@ if (branchDoc.exists()) {
   branchSelect.textContent = b.name;
   branchSelect1.textContent = b.name;
 }
-//--- Load attendance data
-const timeRef = doc(db, "attendance", currentUser.branchId);
-const timeDoc = await getDoc(timeRef);
-if (timeDoc.exists()) {
-  const t = timeDoc.data();
-  branchSelect.textContent = t.time;
+// --- Load today's attendance record ---
+const todayStr = new Date().toISOString().slice(0,10);
+const q = query(
+  collection(db, "attendance"),
+  where("userId", "==", currentUser.id),
+  where("dateStr", "==", todayStr)
+);
+const snap = await getDocs(q);
+
+if (!snap.empty) {
+  const docData = snap.docs[0].data();
+  if (docData.time) {
+    const checkinTime = docData.time.toDate().toLocaleTimeString('en-IN', {
+      hour: '2-digit', minute: '2-digit'
+    });
+    document.getElementById("inTime").textContent = checkinTime;
+  }
 }
+
 
 
 function getDistance(lat1, lon1, lat2, lon2) {
