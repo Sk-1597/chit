@@ -27,7 +27,6 @@ header.topbar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #fff;
   padding: 4px;
 }
 .top-icons {
@@ -38,6 +37,10 @@ header.topbar {
 .icon-btn {
   width: 28px;
   height: 28px;
+}
+.signout-btn image{
+  background: none;
+  border: none;
 }
 main.content {
   padding: 14px;
@@ -146,12 +149,12 @@ main.content {
 
 <header class="topbar">
   <div class="user-info">
-    <a href="profile.html">
+    <a href="./profile">
       <img src="./resources/icons/user.png" alt="User">
     </a>
   </div>
   <div class="top-icons">
-    <a href="history.html">
+    <a href="./history">
       <img src="./resources/icons/history.png" alt="Report" class="icon-btn">
     </a>
     <button id="signOutBtn" class="signout-btn">
@@ -208,7 +211,7 @@ import { getDoc, doc, addDoc, updateDoc, collection, getDocs, query, where, serv
 const loader = document.getElementById("loader");
 const statusBox = document.getElementById("status");
 const currentUser = JSON.parse(localStorage.getItem("loggedUser"));
-if (!currentUser) window.location.href = "index.html";
+if (!currentUser) window.location.href = "./";
 
 userName.textContent = currentUser.user;
 
@@ -354,7 +357,7 @@ checkoutBtn.addEventListener("click", async () => {
 // --- sign out
 document.getElementById("signOutBtn").addEventListener("click", () => {
   localStorage.removeItem("loggedUser");
-  window.location.href = "index.html";
+  window.location.href = "./";
 });
 </script>
 </body>
