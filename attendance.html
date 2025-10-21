@@ -315,9 +315,8 @@ markBtn.onclick = async () => {
     loader.style.display = "none";
     alert("⚠️ Location access denied.");
   });
-};
 
-// --- CHECK OUT BUTTON ---
+  // --- CHECK OUT BUTTON ---
 const checkoutBtn = document.getElementById("checkout");
 
 checkoutBtn.addEventListener("click", async () => {
@@ -364,6 +363,9 @@ checkoutBtn.addEventListener("click", async () => {
   document.getElementById("outTime").textContent = `${dateStr} : ${timeStr}`;
   alert("✅ Checked out successfully!");
 });
+};
+
+
 
 
 // --- sign out
