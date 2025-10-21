@@ -306,6 +306,7 @@ markBtn.onclick = async () => {
       branchName: b.name,
       branchId: currentUser.branchId,
       time: serverTimestamp(),
+      checkoutTime:,
       dateStr: todayStr,
       location: { lat: latitude, lng: longitude, distance }
     });
@@ -350,10 +351,6 @@ checkoutBtn.addEventListener("click", async () => {
   loader.style.display = "none";
   alert("✅ Checked out successfully!");
 });
-
-
-
-
 
 // --- sign out
 document.getElementById("signOutBtn").addEventListener("click", () => {
