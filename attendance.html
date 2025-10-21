@@ -224,9 +224,8 @@ if (branchDoc.exists()) {
 const timeRef = doc(db, "attendance", currentUser.branchId);
 const timeDoc = await getDoc(timeRef);
 if (timeDoc.exists()) {
-  const b = timeDoc.data();
-  branchSelect.textContent = b.name;
-  branchSelect1.textContent = b.name;
+  const t = timeDoc.data();
+  branchSelect.textContent = t.time;
 }
 
 
