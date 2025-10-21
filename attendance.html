@@ -147,15 +147,15 @@ main.content {
 <header class="topbar">
   <div class="user-info">
     <a href="profile.html">
-      <img src="/resources/icons/user.png" alt="User">
+      <img src="./resources/icons/user.png" alt="User">
     </a>
   </div>
   <div class="top-icons">
     <a href="history.html">
-      <img src="/resources/icons/history.png" alt="Report" class="icon-btn">
+      <img src="./resources/icons/history.png" alt="Report" class="icon-btn">
     </a>
     <button id="signOutBtn" class="signout-btn">
-      <img src="/resources/icons/logout.png" alt="Logout" class="icon-btn">
+      <img src="./resources/icons/logout.png" alt="Logout" class="icon-btn">
     </button>
   </div>
 </header>
@@ -173,9 +173,9 @@ main.content {
       </div>
     </div>
     <div class="card-body blue">
-      <p class="branch"><img src="/resources/icons/location.png"><span id="branchSelect"></span></p>
-      <p><img src="/resources/icons/checkin.png"><span id="inTime">--</span></p>
-      <p><img src="/resources/icons/checkout.png"><span id="outTime">--</span></p>
+      <p class="branch"><img src="./resources/icons/location.png"><span id="branchSelect"></span></p>
+      <p><img src="./resources/icons/checkin.png"><span id="inTime">--</span></p>
+      <p><img src="./resources/icons/checkout.png"><span id="outTime">--</span></p>
     </div>
   </section>
 
@@ -188,10 +188,10 @@ main.content {
       </div>
     </div>
     <div class="card-body red">
-      <p class="branch"><img src="/resources/icons/location.png"><span id="branchSelect1"></span></p>
-      <p><img src="/resources/icons/checkout.png"><span>--</span></p>
-      <p><img src="/resources/icons/checkin.png"><span>--</span></p>
-      <p><img src="/resources/icons/purpose.png"><span>--</span></p>
+      <p class="branch"><img src="./resources/icons/location.png"><span id="branchSelect1"></span></p>
+      <p><img src="./resources/icons/checkout.png"><span>--</span></p>
+      <p><img src="./resources/icons/checkin.png"><span>--</span></p>
+      <p><img src="./resources/icons/purpose.png"><span>--</span></p>
     </div>
   </section>
 
@@ -231,13 +231,23 @@ const snap = await getDocs(q);
 
 if (!snap.empty) {
   const docData = snap.docs[0].data();
+
   if (docData.time) {
-    const checkinTime = docData.time.toDate().toLocaleTimeString('en-IN', {
-      hour: '2-digit', minute: '2-digit'
+    const d = docData.time.toDate();  // Firestore Timestamp → JS Date
+
+    // Format date and time for display
+    const dateStr = d.toLocaleDateString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric'
     });
-    document.getElementById("inTime").textContent = checkinTime;
+    const timeStr = d.toLocaleTimeString('en-IN', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    });
+
+    // Display in your HTML
+    document.getElementById("inTime").textContent = `${dateStr} : ${timeStr}`;
   }
 }
+
 
 
 
