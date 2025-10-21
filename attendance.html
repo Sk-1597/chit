@@ -1,114 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Attendance</title>
-  <link rel="stylesheet" href="/resources/css/atten.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ===== MOBILE-FRIENDLY DESIGN ===== */
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #f3f4f6;
+  color: #222;
+}
+header.topbar {
+  background: #b40000;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+}
+.user-info img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  padding: 4px;
+}
+.top-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.icon-btn {
+  width: 28px;
+  height: 28px;
+}
+main.content {
+  padding: 14px;
+}
+.welcome-text {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+#userName {
+  font-size: 22px;
+  font-weight: bold;
+  text-transform: capitalize;
+  margin-bottom: 20px;
+}
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  margin-bottom: 18px;
+  padding: 16px;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.check-bttn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn {
+  border: none;
+  padding: 10px 14px;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+}
+.checkin { background: #2e2eff; }
+.checkout { background: #b40000; }
+.brkin { background: #ff9f00; }
+.brkout { background: #008f39; }
+
+.card-body {
+  margin-top: 14px;
+}
+.card-body p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+  font-size: 16px;
+}
+.card-body p img {
+  height: 20px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  padding: 5px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.15);
+}
+#branchSelect, #branchSelect1 {
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.status-box {
+  text-align: center;
+  font-weight: 600;
+  padding: 10px;
+  margin-top: 8px;
+}
+.status-success { color: green; }
+.status-error { color: red; }
+
+/* loader */
+#loader {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  display: none;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid #ccc;
+  border-top: 5px solid #b40000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
 </head>
+<body class="attendance-page">
 
+<header class="topbar">
+  <div class="user-info">
+    <a href="profile.html">
+      <img src="/resources/icons/user.png" alt="User">
+    </a>
+  </div>
+  <div class="top-icons">
+    <a href="history.html">
+      <img src="/resources/icons/history.png" alt="Report" class="icon-btn">
+    </a>
+    <button id="signOutBtn" class="signout-btn">
+      <img src="/resources/icons/logout.png" alt="Logout" class="icon-btn">
+    </button>
+  </div>
+</header>
 
- <body class="attendance-page">
+<main class="content">
+  <p class="welcome-text">Welcome,</p>
+  <h2 id="userName">Loading...</h2>
 
-  <header class="topbar">
-    <div class="user-info">
-      <a href="profile.html"><img src="/resources/icons/user.png" class="user-icon" alt="User"> </a>     
-    </div>
-    <div class="top-icons">
-  <a href="history.html">
-    <img src="/resources/icons/history.png" alt="Report" class="icon-btn">
-  </a>
-  <button id="signOutBtn" class="signout-btn">
-    <img src="/resources/icons/logout.png" alt="Logout" class="icon-btn">
-  </button>
-</div>
-  </header>
-
-  <main class="content">    
-    <div>
-        <p class="welcome-text">Welcome,</p>
-        <h2 id="userName"></h2>
-      </div>
-
-    <section class="card">
-      <div class="card-header">
-        <h3>Today Attendance</h3>
-        <div class="check-bttn">
+  <section class="card">
+    <div class="card-header">
+      <h3>Today Attendance</h3>
+      <div class="check-bttn">
         <button id="markBtn" class="btn checkin">Check In</button>
-        <button id="checkout" class="btn checkout">Check out</button>
-        </div>
+        <button id="checkout" class="btn checkout">Check Out</button>
       </div>
-      <div class="card-body blue">
-        <p class="branch"><img src="/resources/icons/location.png" alt="" srcset="" ><span id="branchSelect"></span></p>
-        <p><img src="/resources/icons/checkin.png" alt="" srcset=""><span id="inTime">29 Sep 2025 : 09 : 00 : 01 AM</span></p>
-        <p><img src="/resources/icons/checkout.png" alt="" srcset=""><span id="outTime">29 Sep 2025 : 05 : 00 : 05 PM</span></p>
-      </div>
-    </section>
+    </div>
+    <div class="card-body blue">
+      <p class="branch"><img src="/resources/icons/location.png"><span id="branchSelect"></span></p>
+      <p><img src="/resources/icons/checkin.png"><span id="inTime">--</span></p>
+      <p><img src="/resources/icons/checkout.png"><span id="outTime">--</span></p>
+    </div>
+  </section>
 
-    <section class="card brake">
-      <div class="card-header">
-        <h3>Break Time</h3>
-        <div class="check-bttn">
+  <section class="card brake">
+    <div class="card-header">
+      <h3>Break Time</h3>
+      <div class="check-bttn">
         <button id="brkout" class="btn brkin">Out</button>
         <button id="brkin"  class="btn brkout">In</button>
       </div>
-      </div>
-      <div class="card-body red">
-        <p class="branch"><img src="/resources/icons/location.png" alt="" srcset="" ><span id="branchSelect1"></span></p>
-        <p><img src="/resources/icons/checkout.png" alt="" srcset="">29 Sep 2025 : 02 : 5 : 01 AM</p>
-        <p><img src="/resources/icons/checkin.png" alt="" srcset="">29 Sep 2025 : 03 : 15 : 05 PM</p>
-        <p><img src="/resources/icons/purpose.png" alt="" srcset="">Hospital</p>
-      </div>
-    </section>
-    <div id="status" class="status-text"></div>
-  </main>
+    </div>
+    <div class="card-body red">
+      <p class="branch"><img src="/resources/icons/location.png"><span id="branchSelect1"></span></p>
+      <p><img src="/resources/icons/checkout.png"><span>--</span></p>
+      <p><img src="/resources/icons/checkin.png"><span>--</span></p>
+      <p><img src="/resources/icons/purpose.png"><span>--</span></p>
+    </div>
+  </section>
 
-  <script type="module">
-  import { db } from './firebase.js';
+  <div id="status" class="status-box"></div>
+</main>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<script type="module">
+import { db } from './firebase.js';
 import { getDoc, doc, addDoc, collection, getDocs, query, where, serverTimestamp } 
   from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
+const loader = document.getElementById("loader");
+const statusBox = document.getElementById("status");
 const currentUser = JSON.parse(localStorage.getItem("loggedUser"));
 if (!currentUser) window.location.href = "index.html";
 
 userName.textContent = currentUser.user;
 
+// --- load branch
 const branchRef = doc(db, "branches", currentUser.branchId);
 const branchDoc = await getDoc(branchRef);
 if (branchDoc.exists()) {
-  const name = branchDoc.data().name;
-  branchSelect.textContent = name;
-  branchSelect1.textContent = name;
+  const b = branchDoc.data();
+  branchSelect.textContent = b.name;
+  branchSelect1.textContent = b.name;
 }
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1 * Math.PI / 180) *
-            Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+            Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 markBtn.onclick = async () => {
-  status.innerText = "";
+  statusBox.textContent = "";
+  loader.style.display = "flex";
 
   const bDoc = await getDoc(branchRef);
-  if (!bDoc.exists()) return alert("Branch not found");
+  if (!bDoc.exists()) {
+    loader.style.display = "none";
+    return alert("Branch not found");
+  }
   const b = bDoc.data();
 
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const { latitude, longitude } = pos.coords;
     const distance = getDistance(latitude, longitude, b.lat, b.lng);
-    const branchRadius = Number(b.radius_m);
+    const radius = Number(b.radius_m);
 
-    if (isNaN(b.lat) || isNaN(b.lng)) return alert("⚠️ Invalid branch coordinates");
-    if (isNaN(branchRadius)) return alert("⚠️ Invalid branch radius");
+    if (isNaN(b.lat) || isNaN(b.lng) || isNaN(radius)) {
+      loader.style.display = "none";
+      return alert("⚠️ Invalid branch location data");
+    }
 
-    if (currentUser.role !== "admin" && distance > branchRadius) {
-      alert(`🚫 Outside branch area (${Math.round(distance)}m > ${branchRadius}m)`);
+    if (currentUser.role !== "admin" && distance > radius) {
+      loader.style.display = "none";
+      statusBox.className = "status-box status-error";
+      statusBox.textContent = `🚫 Outside branch area (${Math.round(distance)}m > ${radius}m)`;
       return;
     }
 
@@ -118,7 +265,9 @@ markBtn.onclick = async () => {
                     where("dateStr", "==", todayStr));
     const existing = await getDocs(q);
     if (!existing.empty) {
-      status.innerText = "⚠️ Attendance already marked today!";
+      loader.style.display = "none";
+      statusBox.className = "status-box status-error";
+      statusBox.textContent = "⚠️ Attendance already marked today!";
       return;
     }
 
@@ -132,12 +281,20 @@ markBtn.onclick = async () => {
       location: { lat: latitude, lng: longitude, distance }
     });
 
-    status.innerText = "✅ Attendance Marked Successfully!";
-  }, () => alert("⚠️ Location access denied."));
+    loader.style.display = "none";
+    statusBox.className = "status-box status-success";
+    statusBox.textContent = "✅ Attendance Marked Successfully!";
+  }, () => {
+    loader.style.display = "none";
+    alert("⚠️ Location access denied.");
+  });
 };
 
-
-  </script>
-  <script src="nn.js"></script>
+// --- sign out
+document.getElementById("signOutBtn").addEventListener("click", () => {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "index.html";
+});
+</script>
 </body>
 </html>
