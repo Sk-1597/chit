@@ -1,0 +1,164 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #ddd;
+}
+
+.topbar {
+  background: #b40000;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 30%;
+  padding: 2px;
+}
+
+.welcome-text {
+  margin: 0;
+  font-size: 18px;
+  color: #000000;
+  margin-top: 8px;
+}
+
+#userName {
+  margin: 0;
+  font-size: 22px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-left: 10px;
+  padding: 7px;
+  margin-bottom: 10px;
+}
+
+.top-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.content {
+  padding: 12px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 6px;
+  margin-bottom: 30px;
+  padding: 20px;
+  height: 19vh;
+  box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.507);
+}
+.brake{
+   height: 23vh;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+.check-bttn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: absolute;
+  right: 10px;
+  top: 100px;
+  transform: translateY(-50%);
+}
+.brake .check-bttn{
+  top: 110px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.btn {
+  color: #fff;
+  border: none;
+  font-weight: bold;
+  border-radius: 10%;
+  cursor: pointer;
+  height: 80px;
+  width: 100px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.507);
+}
+.signout-btn{
+  background:none;
+  border: none;
+}
+  
+.checkin,
+.brkin {
+  background: #2e2eff;
+}
+
+.checkout,
+.brkout {
+  background: #b40000;
+}
+
+.card-body {
+  margin-top: 25px;
+}
+
+.card-body p  {
+  margin: 5px 0;
+  font-size: 17px;
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#branchSelect,
+#branchSelect1 {
+  font-size: 22px;
+  font-weight: bolder;
+  font-size: 21px;
+  text-transform: uppercase
+}
+
+.card-body p img {
+  height: 20px;
+  background-color: #cacaca60;
+  border-radius: 50px;
+  padding: 5px;
+  box-shadow: 0 0 4px rgba(22, 3, 128, 0.699);
+}
+
+.branch {
+  font-weight: bold;
+  color: #333;
+  font-size: larger;
+}
+
+.blue p {
+  color: #0011ff;
+}
+
+.red p {
+  color: #b40000;
+}

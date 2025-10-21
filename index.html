@@ -1,66 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="css/main.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Branch Attendance</title>
+  <link rel="stylesheet" href="resources/css/mobil.css">
 </head>
-<body>   
-  <div class="topbar">
-    <h4>Chengannur Chits</h4>
-    <span><img src="images/user.png" alt="usericon">
-      <p id="branchNamehid">User Name</p>
-      <input type="hidden" id="hidbranchName"></span>
+
+<body>
+  <body class="login-page">
+
+  <div class="login-container">
+    <div class="login-logo">
+      <div class="logo-circle"><img src="resources/images/logo.png" alt="artlogo" srcset=""></div>
+    </div>
+
+    <p class="title">Art Group <br>
+      <span>Staff Attendance Register</span></p>
+    <p>login</p>
+
+    <div class="input-group">      
+      <div class="input-box">
+        <input type="text" id="email" placeholder="Username">
+        <span class="icon">📧</span>
+      </div>
+    </div>
+
+    <div class="input-group">     
+      <div class="input-box">
+        <input type="password" id="pass" placeholder="Password">
+        <span class="icon">🔒</span>
+      </div>
+    </div>
+
+    <button id="signInBtn" class="login-btn">Login</button>
+
+    <div class="links">
+      <a href="tel:8943359116">Help</a>
+      <a href="tel:8943359150">Forgot Password?</a>
+    </div>
   </div>
 
-  <nav>
-  <ul>
-    <li class="dropdown"><a class="active" href="home.html"><img src="images/home.png" alt="">Dashboard</a></li>
+  <script type="module">
+  import { db } from './firebase.js';
+  import { collection, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-    <li class="dropdown">
-      <a ><img src="images/cust.png" alt="">Customer ▾</a>
-      <ul class="dropdown-content">
-        <li><a href="./customer/new.html">New Customer</a></li>
-        <li><a href="chit_payment.html">Customer List</a></li>
-      </ul>
-    </li>        
-   
-    <li class="dropdown">
-      <a><img src="images/chits.png" alt="">Chits ▾</a>
-      <ul class="dropdown-content">
-        <li><a href="chit_summary.html">Chit Summary</a></li>
-        <li><a href="chit_payment.html">Chit Payments</a></li>
-        <li><a href="chit_members.html">Chit Members</a></li>
-      </ul>
-    </li>  
+  const getDeviceId = () => {
+    let id = localStorage.getItem('deviceId');
+    if (!id) {
+      id = 'dev-' + Math.random().toString(36).substring(2) + Date.now();
+      localStorage.setItem('deviceId', id);
+    }
+    return id;
+  };
+  const currentDeviceId = getDeviceId();
 
-    <li class="dropdown">
-      <a><img src="images/account.png" alt="">Accounts ▾</a>
-      <ul class="dropdown-content">
-        <li><a href="chit_summary.html">Balance</a></li>
-        <li><a href="chit_payment.html">Cash Tranfer</a></li>
-      </ul>
-    </li>  
+  document.getElementById("signInBtn").onclick = async () => {
+    const username = email.value.trim();
+    const password = pass.value.trim();
 
-    <li class="dropdown">
-      <a><img src="images/reports.png" alt="">Reports ▾</a>
-      <ul class="dropdown-content">
-        <li><a href="chit_summary.html">Balance</a></li>
-        <li><a href="chit_payment.html">Cash Tranfer</a></li>
-      </ul>
-    </li>  
-    
-    
-    <li class="dropdown" id="settingsLink"><a href="setings.html"><img src="images/setting.png" alt="">Settings</a></li>  
-     <li class="dropdown"><a href="balance.html"><img src="images/logout.png" alt="">LogOut</a></li>      
-  </ul>
-</nav>
+    if (!username || !password) return alert("Enter username and password");
 
+    const q = query(collection(db, 'users'), where('username', '==', username));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return alert("User not found");
 
-<div class="main_container"> 
-  <h1>Backs\ash</h1>
-</div>
-  
+    const docSnap = snapshot.docs[0];
+    const user = docSnap.data();
+
+    if (user.password !== password) return alert("Incorrect password");
+
+    // Device check
+    if (!user.deviceId) {
+      await updateDoc(doc(db, 'users', docSnap.id), { deviceId: currentDeviceId });
+    } else if (user.deviceId !== currentDeviceId) {
+      alert("🚫 Account already linked to another device");
+      return;
+    }
+
+    localStorage.setItem("loggedUser", JSON.stringify({ id: docSnap.id, ...user }));
+    window.location.href = "attendance.html"; // redirect
+  };
+  </script>
 </body>
 </html>
