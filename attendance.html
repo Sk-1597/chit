@@ -192,9 +192,9 @@ main.content {
     </div>
     <div class="card-body red">
       <p class="branch"><img src="./resources/icons/location.png"><span id="branchSelect1"></span></p>
-      <p><img src="./resources/icons/checkout.png"><span>--</span></p>
-      <p><img src="./resources/icons/checkin.png"><span>--</span></p>
-      <p><img src="./resources/icons/purpose.png"><span>--</span></p>
+       <p><img src="./resources/icons/checkout.png"><span id="brkOutTime">--</span></p>
+  <p><img src="./resources/icons/checkin.png"><span id="brkInTime">--</span></p>
+  <p><img src="./resources/icons/purpose.png"><span id="brkPurpose">--</span></p>
     </div>
   </section>
 
@@ -215,7 +215,6 @@ if (!currentUser) window.location.href = "./";
 
 userName.textContent = currentUser.user;
 
-// --- Load branch ---
 const branchRef = doc(db, "branches", currentUser.branchId);
 const branchDoc = await getDoc(branchRef);
 let branchData = null;
@@ -225,7 +224,6 @@ if (branchDoc.exists()) {
   branchSelect1.textContent = branchData.name;
 }
 
-// --- Load today's attendance record ---
 const todayStr = new Date().toISOString().slice(0,10);
 const q = query(
   collection(db, "attendance"),
@@ -236,19 +234,36 @@ const snap = await getDocs(q);
 
 if (!snap.empty) {
   const docData = snap.docs[0].data();
+
+  // --- Check In display ---
   if (docData.time) {
     const d = docData.time.toDate();
     document.getElementById("inTime").textContent =
       `${d.toLocaleDateString('en-IN')} : ${d.toLocaleTimeString('en-IN')}`;
   }
+
+  // --- Check Out display ---
   if (docData.checkoutTime) {
     const out = docData.checkoutTime.toDate();
     document.getElementById("outTime").textContent =
       `${out.toLocaleDateString('en-IN')} : ${out.toLocaleTimeString('en-IN')}`;
   }
+
+  // --- Break Out display ---
+  if (docData.breakOut) {
+    const bo = docData.breakOut.toDate();
+    document.getElementById("brkOutTime").textContent =
+      `${bo.toLocaleDateString('en-IN')} : ${bo.toLocaleTimeString('en-IN')}`;
+  }
+
+  // --- Break In display ---
+  if (docData.breakIn) {
+    const bi = docData.breakIn.toDate();
+    document.getElementById("brkInTime").textContent =
+      `${bi.toLocaleDateString('en-IN')} : ${bi.toLocaleTimeString('en-IN')}`;
+  }
 }
 
-// --- Distance calculator ---
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -374,40 +389,81 @@ const brkOut = document.getElementById("brkout");
 const brkIn = document.getElementById("brkin");
 
 brkOut.addEventListener("click", async () => {
-  const confirmOut = confirm("Start break now?");
-  if (!confirmOut) return;
+  // show modal with text input for purpose
+  const { value: purpose, isConfirmed } = await Swal.fire({
+    title: 'Start break',
+    input: 'text',
+    inputLabel: 'Break purpose (optional)',
+    inputPlaceholder: 'Eg: Lunch, Meeting, Hospital, Personal',
+    showCancelButton: true,
+    confirmButtonText: 'Start Break',
+    cancelButtonText: 'Cancel',
+    inputValidator: (val) => {
+      // optional: require non-empty - remove if purpose optional
+      // if (!val) return 'Please enter a purpose or cancel';
+      return null;
+    },
+    allowOutsideClick: false
+  });
+
+  if (!isConfirmed) return; // user cancelled
+
+  loader.style.display = "flex";
+
+  // get latest attendance doc for today
   const q = query(
     collection(db, "attendance"),
     where("userId", "==", currentUser.id),
     where("dateStr", "==", todayStr)
   );
   const snap = await getDocs(q);
-  if (snap.empty) return alert("⚠️ You haven't checked in yet!");
+  if (snap.empty) {
+    loader.style.display = "none";
+    return Swal.fire('Error', "⚠️ You haven't checked in yet!", 'error');
+  }
 
   const attDoc = snap.docs[0];
   const attRef = attDoc.ref;
 
-  await updateDoc(attRef, { breakOut: serverTimestamp() });
-  alert("🍵 Break started!");
+  // optional: capture current location for break-out (recommended)
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const { latitude, longitude } = pos.coords;
+    const distance = branchData ? getDistance(latitude, longitude, branchData.lat, branchData.lng) : 0;
+
+    // optionally verify location for break-out as well:
+    if (branchData && currentUser.role !== "admin") {
+      const radius = Number(branchData.radius_m);
+      if (!isNaN(radius) && distance > radius) {
+        loader.style.display = "none";
+        return Swal.fire('Outside area', `You are ${Math.round(distance)}m away (> ${radius}m).`, 'warning');
+      }
+    }
+
+    // update firestore: breakOut, breakPurpose, breakOutLocation
+    await updateDoc(attRef, {
+      breakOut: serverTimestamp(),
+      breakPurpose: purpose || null,
+      breakOutLocation: { lat: latitude, lng: longitude, distance }
+    });
+
+    // update UI immediately with current time & purpose
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+    document.getElementById("brkOutTime").textContent = `${dateStr} : ${timeStr}`;
+    document.getElementById("brkPurpose").textContent = purpose ? purpose : '—';
+
+    loader.style.display = "none";
+    Swal.fire('Break started', 'Have a good break!', 'success');
+  }, (err) => {
+    loader.style.display = "none";
+    console.error(err);
+    Swal.fire('Location error', 'Unable to get location. Break not recorded.', 'error');
+  });
 });
 
-brkIn.addEventListener("click", async () => {
-  const confirmIn = confirm("End break now?");
-  if (!confirmIn) return;
-  const q = query(
-    collection(db, "attendance"),
-    where("userId", "==", currentUser.id),
-    where("dateStr", "==", todayStr)
-  );
-  const snap = await getDocs(q);
-  if (snap.empty) return alert("⚠️ You haven't checked in yet!");
 
-  const attDoc = snap.docs[0];
-  const attRef = attDoc.ref;
-
-  await updateDoc(attRef, { breakIn: serverTimestamp() });
-  alert("✅ Break ended!");
-});
 
 // --- sign out
 document.getElementById("signOutBtn").addEventListener("click", () => {
